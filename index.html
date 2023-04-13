@@ -1,49 +1,141 @@
-<html lang="en">
+<!DOCTYPE html>
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gr8 Demo</title>
-    <link href="style.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <title>Chat with ChatGPT</title>
+    <style>
+      /* Style the chat interface */
+      .chat-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Style the chat messages */
+      .chat-message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      /* Style the user's chat messages */
+      .chat-message-user {
+        background-color: #e6f7ff;
+      }
+
+      /* Style the bot's chat messages */
+      .chat-message-bot {
+        background-color: #f7f7f7;
+      }
+
+      /* Style the chat input */
+      .chat-input {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        resize: none;
+      }
+
+      /* Style the chat submit button */
+      .chat-submit {
+        display: block;
+        margin-top: 10px;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
   </head>
-
   <body>
-    <div class="container">
-      <div class="header">
-        <h3>Example project</h3>
-        <h1>歡迎來到Gr8天堂</h1>
-        <p>
-          建設中。。。
-        </p>
-        <p>Create new deployments using:</p>
-        <section class="options">
-          <img src="assets/terminal.svg" />
-          <a
-            href="https://dash.cloudflare.com/?to=/:account/pages/new/wrangler-guide"
-            target="_blank"
-            > Wrangler CLI</a
-          >
-          <img src="assets/cloud-upload.svg" />
-          <a
-            href="https://dash.cloudflare.com/?to=/:account/pages/new/upload"
-            target="_blank"
-            > Dashboard</a
-          >
-        </section>
-      </div>
-
-      <section class="learn-more">
-        <a
-          href="https://developers.cloudflare.com/pages/platform/direct-uploads"
-        >
-          <button>想知道更多</button>
-        </a>
-      </section>
-      <div class="logo">
-        <a href="https://pages.cloudflare.com/" target="_blank">
-          <img src="assets/cloudflare-pages.svg"
-        /></a>
-      </div>
+    <div class="chat-container">
+      <div id="chat-messages"></div>
+      <form id="chat-form">
+        <textarea id="chat-input" class="chat-input" rows="3" placeholder="Type your message here..."></textarea>
+        <button id="chat-submit" class="chat-submit">Send</button>
+      </form>
     </div>
-  </body>
-</html>
+
+    <script>
+      // Function to add a chat message to the DOM
+      function addChatMessage(message, isUser) {
+        // Create a new chat message element
+        var chatMessageElem = document.createElement('div');
+        chatMessageElem.className = 'chat-message';
+
+        // Set the background color based on whether the message is from the user or the bot
+        if (isUser) {
+          chatMessageElem.className += ' chat-message-user';
+        } else {
+          chatMessageElem.className += ' chat-message-bot';
+        }
+
+        // Set the message text
+        chatMessageElem.innerHTML = message;
+
+        // Add the chat message to the container
+        var chatMessagesElem = document.getElementById('chat-messages');
+        chatMessagesElem.appendChild(chatMessageElem);
+      }
+
+      // Function to send a message to the ChatGPT API and receive a response
+      function sendMessage(message) {
+        // Make a POST request to the ChatGPT API
+        fetch('https://api.openai.com/v1/engines/davinci-codex/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer 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'
+          },
+          body: JSON.stringify({
+            prompt: message,
+            max_tokens:        150,
+        n: 1,
+        stop: '\n'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Get the response from the API and add it to the chat interface
+      var response = data.choices[0].text.trim();
+      addChatMessage(response, false);
+    })
+    .catch(error => {
+      // Handle any errors that occur during the API request
+      console.error(error);
+      addChatMessage('An error occurred while processing your message. Please try again.', false);
+    });
+  }
+
+  // Function to handle the chat form submission
+  function handleChatSubmit(event) {
+    event.preventDefault();
+    var chatInputElem = document.getElementById('chat-input');
+    var message = chatInputElem.value.trim();
+
+    if (message) {
+      // Add the user's message to the chat interface
+      addChatMessage(message, true);
+
+      // Send the user's message to the ChatGPT API and receive a response
+      sendMessage(message);
+
+      // Clear the chat input
+      chatInputElem.value = '';
+    }
+  }
+
+  // Add an event listener to the chat form submit button
+  var chatFormElem = document.getElementById('chat-form');
+  chatFormElem.addEventListener('submit', handleChatSubmit);
+</script>
+
